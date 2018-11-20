@@ -17,7 +17,10 @@ class Master {
 
 	private:
 		/* NOW you can add below, data members and member functions as per the need of your implementation*/
-
+/*		std::vector<std::unique_ptr<worker::Stub>> worker_stubs;
+		std::vector<std::shared_ptr<Channel>> worker_channels;
+		std::map<FileShard, int> map_status; // 0 for not assigned, 1 for in-progress, 2 for done, -1 for failure
+		std::map<std::string, int> reduce_status; // structure to keep track of the intermediate files and their status*/
 };
 
 
@@ -25,7 +28,24 @@ class Master {
 	You can populate your other class data members here if you want */
 Master::Master(const MapReduceSpec& mr_spec, const std::vector<FileShard>& file_shards) {
 	//create channels
+/*	std::string worker_server;
+	for(auto entry : mr_spec.worker_ipaddr_ports){
+		worker_server = entry;
+		//form a channel and create a Stub
+		std::shared_ptr<Channel> channel = grpc::CreateChannel(worker_server, grpc::InsecureChannelCredentials());
+		std::unique_ptr<Worker::Stub> worker_stub = Worker::NewStub(channel);
+		worker_stubs.push_back(std::move(worker_stub));  //unique_ptr cannot be copied, have to be moved
+		worker_channels.push_back(channel);
+	}
 	//create supporting data structures
+
+	// structure to keep track of which shards are done
+	for (auto entry : file_shards) {
+		map_status[entry] = 0;
+	}
+*/
+
+
 }
 
 
