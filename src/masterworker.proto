@@ -1,3 +1,26 @@
 syntax = "proto3";
 
 package masterworker;
+
+service Worker {
+  rpc assignTask (TaskRequest) returns (TaskResponse){}
+}
+
+message TaskRequest{
+  string task_type = 1;
+  repeated FilePath file_paths = 2;
+  int32 num_reducers = 3;
+  string output_dir = 4;
+  string input_dir = 5;
+}
+
+message FilePath{
+  string file_path = 1;
+  int32 start_offset = 2;
+  int32 end_offset = 3;
+}
+
+message TaskResponse{
+  repeated FilePath file_paths = 1;
+  int32 status = 2;
+}
