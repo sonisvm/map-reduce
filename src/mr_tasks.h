@@ -1,0 +1,135 @@
+#pragma once
+
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+
+/* CS6210_TASK Implement this data structureas per your implementation.
+		You will need this when your worker is running the map task*/
+struct BaseMapperInternal {
+	std::map<std::string, std::map<std::string, std::string>> fileToKeyValueMap;
+	int num_reducers;
+	std::string output_dir;
+	int key_count;
+
+	/* DON'T change this function's signature */
+	BaseMapperInternal();
+
+	/* DON'T change this function's signature */
+	void emit(const std::string& key, const std::string& val);
+
+	void configure(int num_reducers, std::string output_dir);
+
+	void flush();
+
+	std::string getFilePath(std::string key);
+
+};
+
+
+/* CS6210_TASK Implement this function */
+inline BaseMapperInternal::BaseMapperInternal() {
+	key_count=0;
+}
+
+inline void BaseMapperInternal::configure(int num_reducers, std::string output_dir){
+	this->num_reducers = num_reducers;
+	this->output_dir = output_dir;
+}
+
+inline void BaseMapperInternal::flush(){
+	//save any keys left in the map to file
+	for (auto entry : fileToKeyValueMap) {
+		std::fstream file;
+		file.open(entry.first, std::fstream::in | std::fstream::out | std::fstream::app);
+		for (auto keyValue: entry.second) {
+			file << keyValue.first <<" " << keyValue.second << "\n";
+		}
+		file.close();
+	}
+	fileToKeyValueMap.clear();
+	key_count=0;
+}
+
+//gets the intermediate file to store the data
+inline std::string BaseMapperInternal::getFilePath(std::string key){
+	return "../Project4/cs6210Project4/test/"+output_dir+"/intermediate" + std::to_string(key.length()%num_reducers) +".txt";
+}
+
+/* CS6210_TASK Implement this function */
+inline void BaseMapperInternal::emit(const std::string& key, const std::string& val) {
+	std::string intermediateFile = getFilePath(key);
+
+	auto entry = fileToKeyValueMap.find(intermediateFile);
+	if(entry!=fileToKeyValueMap.end()){
+		auto keyEntry = entry->second.find(key);
+		if(keyEntry!=entry->second.end()){
+			int count = stoi(keyEntry->second);
+			count+=stoi(val);
+			entry->second[keyEntry->first] = std::to_string(count);
+		} else {
+			entry->second[key] = val;
+			key_count++;
+		}
+	} else {
+		std::map<std::string, std::string> tempMap;
+		tempMap[key] = val;
+		fileToKeyValueMap[intermediateFile] = tempMap;
+		key_count++;
+	}
+
+	if(key_count >= 100){
+		for (auto entry : fileToKeyValueMap) {
+			std::fstream file;
+			file.open(entry.first, std::fstream::in | std::fstream::out | std::fstream::app);
+			for (auto keyValue: entry.second) {
+				file << keyValue.first <<" " << keyValue.second << "\n";
+			}
+			file.close();
+		}
+		fileToKeyValueMap.clear();
+		key_count=0;
+	}
+}
+
+
+/*-----------------------------------------------------------------------------------------------*/
+
+
+/* CS6210_TASK Implement this data structureas per your implementation.
+		You will need this when your worker is running the reduce task*/
+struct BaseReducerInternal {
+
+	std::string output_dir;
+	std::string output_file;
+	std::map<std::string, std::string> keyValueMap;
+	/* DON'T change this function's signature */
+	BaseReducerInternal();
+
+	/* DON'T change this function's signature */
+	void emit(const std::string& key, const std::string& val);
+
+	/* NOW you can add below, data members and member functions as per the need of your implementation*/
+	void configure(std::string output_dir, std::string output_file);
+};
+
+
+/* CS6210_TASK Implement this function */
+inline BaseReducerInternal::BaseReducerInternal() {
+
+}
+
+inline void BaseReducerInternal::configure(std::string output_dir, std::string output_file){
+	this->output_dir = output_dir;
+	this->output_file = output_file;
+}
+
+/* CS6210_TASK Implement this function */
+inline void BaseReducerInternal::emit(const std::string& key, const std::string& val) {
+	std::fstream file;
+	file.open(output_dir+"/"+output_file, std::fstream::in | std::fstream::out | std::fstream::app);
+	file << key << " " << val;
+	file.close();
+}
