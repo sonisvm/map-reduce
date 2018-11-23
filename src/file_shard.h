@@ -9,9 +9,9 @@
 /* CS6210_TASK: Create your own data structure here, where you can hold information about file splits,
      that your master would use for its own bookkeeping and to convey the tasks to the workers for mapping */
 struct FileShard {
-	vector<string> filenames;
-	vector<int> from_offset;
-	vector<int> to_offset;
+	std::vector<std::string> filenames;
+	std::vector<int> from_offset;
+	std::vector<int> to_offset;
 };
 
 
