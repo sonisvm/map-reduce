@@ -23,7 +23,6 @@ struct MapReduceSpec {
 inline bool read_mr_spec_from_config_file(const std::string& config_filename, MapReduceSpec& mr_spec) {
 	fstream file;
 	string line;
-	cout << "Inside read";
 	file.open("../test/config.ini", fstream::in);
 	size_t index;
 	while(getline(file, line)) {
