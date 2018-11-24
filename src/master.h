@@ -131,11 +131,13 @@ bool Master::run() {
 
 		if (statuses[worker_response_rcvd].ok()) {
 
-
+			cout << "Received" << "\n";
 			if (responses[worker_response_rcvd].status()==1) {
 				// extracting the intermediate files from response
 				int result_size = responses[worker_response_rcvd].file_paths_size();
+				cout << "Intermediate files stored at: \n";
 				for (size_t i = 0; i < result_size; i++) {
+					cout << responses[worker_response_rcvd].file_paths(i).file_path() << "\n";
 					intermediate_files.push_back(responses[worker_response_rcvd].file_paths(i).file_path());
 				}
 				map_status[worker_to_shard_map[worker_response_rcvd]] = 2;

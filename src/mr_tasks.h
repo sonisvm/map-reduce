@@ -4,7 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <map>
+#include <set>
 
 /* CS6210_TASK Implement this data structureas per your implementation.
 		You will need this when your worker is running the map task*/
@@ -13,6 +15,7 @@ struct BaseMapperInternal {
 	int num_reducers;
 	std::string output_dir;
 	int key_count;
+	std::set<std::string> files;
 
 	/* DON'T change this function's signature */
 	BaseMapperInternal();
@@ -25,6 +28,7 @@ struct BaseMapperInternal {
 	void flush();
 
 	std::string getFilePath(std::string key);
+	std::vector<std::string> getFilePaths();
 
 };
 
@@ -48,6 +52,7 @@ inline void BaseMapperInternal::flush(){
 			file << keyValue.first <<" " << keyValue.second << "\n";
 		}
 		file.close();
+		files.insert(entry.first);
 	}
 	fileToKeyValueMap.clear();
 	key_count=0;
@@ -55,7 +60,7 @@ inline void BaseMapperInternal::flush(){
 
 //gets the intermediate file to store the data
 inline std::string BaseMapperInternal::getFilePath(std::string key){
-	return "../Project4/cs6210Project4/test/"+output_dir+"/intermediate" + std::to_string(key.length()%num_reducers) +".txt";
+	return output_dir+"/intermediate" + std::to_string(key.length()%num_reducers) +".txt";
 }
 
 /* CS6210_TASK Implement this function */
@@ -88,12 +93,21 @@ inline void BaseMapperInternal::emit(const std::string& key, const std::string& 
 				file << keyValue.first <<" " << keyValue.second << "\n";
 			}
 			file.close();
+			files.insert(entry.first);
 		}
 		fileToKeyValueMap.clear();
 		key_count=0;
 	}
 }
 
+inline std::vector<std::string> BaseMapperInternal::getFilePaths() {
+	std::vector<std::string> file_paths;
+	for (auto entry : files) {
+		file_paths.push_back(entry);
+	}
+
+	return file_paths;
+}
 
 /*-----------------------------------------------------------------------------------------------*/
 

@@ -23,7 +23,7 @@ struct MapReduceSpec {
 inline bool read_mr_spec_from_config_file(const std::string& config_filename, MapReduceSpec& mr_spec) {
 	fstream file;
 	string line;
-
+	cout << "Inside read";
 	file.open("../test/config.ini", fstream::in);
 	size_t index;
 	while(getline(file, line)) {
@@ -115,29 +115,29 @@ inline bool read_mr_spec_from_config_file(const std::string& config_filename, Ma
 inline bool validate_mr_spec(const MapReduceSpec& mr_spec) {
 	fstream file;
 	bool ret_val = true;
-	// if(mr_spec.num_workers == 0 || mr_spec.map_kilobytes == 0 || mr_spec.num_output_files == 0) {
-	// 	std::cerr << "Specs not configured properly." << std::endl;
-	// 	ret_val = false;
-	// }
-	//
-	// if(mr_spec.user_id == "" || mr_spec.output_dir == "") {
-	// 	std::cerr << "Specs not configured properly." << std::endl;
-	// 	ret_val = false;
-	// }
-	//
-	// for(int i=0; i < mr_spec.input_files.size(); i++) {
-	// 	file.open(mr_spec.input_files[i], fstream::in);
-	// 	if(file.good() != 1) {
-	// 		std::cerr << "Specs not configured properly. Can't open input file" << std::endl;
-	// 		ret_val = false;
-	// 	}
-	// 	file.close();
-	// }
-	//
-	// if(mr_spec.worker_ipaddr_ports.size() < 1) {
-	// 	std::cerr << "Specs not configured properly" << std::endl;
-	// 	ret_val = false;
-	// }
+	if(mr_spec.num_workers == 0 || mr_spec.map_kilobytes == 0 || mr_spec.num_output_files == 0) {
+		std::cerr << "Specs not configured properly." << std::endl;
+		ret_val = false;
+	}
+
+	if(mr_spec.user_id == "" || mr_spec.output_dir == "") {
+		std::cerr << "Specs not configured properly." << std::endl;
+		ret_val = false;
+	}
+
+	for(int i=0; i < mr_spec.input_files.size(); i++) {
+		file.open(mr_spec.input_files[i], fstream::in);
+		if(file.good() != 1) {
+			std::cerr << "Specs not configured properly. Can't open input file" << std::endl;
+			ret_val = false;
+		}
+		file.close();
+	}
+
+	if(mr_spec.worker_ipaddr_ports.size() < 1) {
+		std::cerr << "Specs not configured properly" << std::endl;
+		ret_val = false;
+	}
 
 	//https://stackoverflow.com/questions/12510874/how-can-i-check-if-a-directory-exists
 

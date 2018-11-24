@@ -46,27 +46,28 @@ class Worker {
 	    }
 
 	    void processRequest() {
-	      std::vector<TaskResponse> responses;
 				string str;
+				vector<string> file_paths;
 	      if (!finish) {
 	        new RequestHandler(service, worker_request_cq, worker);
 
 					if(request.task_type() == "MAP") {
+						cout << "Mapping in process \n";
 						auto mapper = get_mapper_from_task_factory("cs6210");
 						mapper->impl_->num_reducers = request.num_reducers();
 						mapper->impl_->output_dir = request.output_dir();
-						// vector<FilePath> file_paths = request.file_paths();
 
 						for(int i=0; i<request.file_paths().size(); i++) {
 							string file_abs_path = request.file_paths(i).file_path();
 							int start_offset = request.file_paths(i).start_offset();
 							int end_offset = request.file_paths(i).end_offset();
-							std::ifstream file(file_abs_path, std::ios::in | std::ios::ate);
+							std::ifstream file(file_abs_path, std::ios::in);
 							if(!file.is_open()){
-								std::cout << "Unable to open file\n";
+								cout << "Unable to open file\n";
 							} else {
-								file.seekg (start_offset, ios::beg);
-								while(file.tellg() != end_offset) {
+								file.seekg (start_offset, file.beg);
+
+								while(file.tellg() <= end_offset && file.tellg()!=-1) {
 									std::getline(file, str);
 									mapper->map(str);
 								}
@@ -75,6 +76,14 @@ class Worker {
 							file.close();
 						}
 
+						mapper->impl_->flush();
+						file_paths = mapper->impl_->getFilePaths();
+						for(auto entry: file_paths) {
+							FilePath* file_path = response.add_file_paths();
+							file_path->set_file_path(entry);
+						}
+						cout << "Mapping completed \n";
+						response.set_status(1);
 					} else {
 						// auto reducer = get_reducer_from_task_factory("cs6210");
 						// reducer->reduce("dummy", std::vector<std::string>({"1", "1"}));
@@ -153,7 +162,6 @@ bool Worker::run() {
 		//once map is done, worker should communicate the result with master
 		// master should mention if the task is reduce or map
 		//accordingly worker should invoke get_mapper_from_task_factory or get_reducer_from_task_factory
-	std::cout << "worker.run(), I 'm not ready yet" <<std::endl;
 
 	handleRequests();
 	// auto mapper = get_mapper_from_task_factory("cs6210");
