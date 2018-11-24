@@ -100,7 +100,8 @@ class Worker {
 	  };
 
 		string ip_addr_port;
-		masterworker::Worker::AsyncService* service;
+		masterworker::Worker::AsyncService service;
+		std::unique_ptr<Server>  server;
 		std::unique_ptr<ServerCompletionQueue> worker_queue_cq;
 };
 
@@ -115,16 +116,16 @@ Worker::Worker(std::string ip_addr_port) {
 	builder.AddListeningPort(ip_addr_port, grpc::InsecureServerCredentials());
 	// Register "service" as the instance through which we'll communicate with
 	// clients. In this case it corresponds to an *synchronous* service.
-	builder.RegisterService(service);
+	builder.RegisterService(&service);
 	worker_queue_cq = builder.AddCompletionQueue();
 	// Finally assemble the server.
-	std::unique_ptr<Server> server(builder.BuildAndStart());
+	server=builder.BuildAndStart();
 	std::cout << "Worker running on " << ip_addr_port << std::endl;
 }
 
 void Worker::handleRequests() {
     // Spawn a new CallData instance to serve new clients.
-    new RequestHandler(service, worker_queue_cq.get(), this);
+    new RequestHandler(&service, worker_queue_cq.get(), this);
     void* tag;  // uniquely identifies a request.
     bool ok;
     while (true) {

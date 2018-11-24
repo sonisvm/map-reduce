@@ -39,6 +39,8 @@ class Master {
 		std::map<int, int> worker_to_reduce_map;
 		std::vector<std::string> intermediate_files;
 		MapReduceSpec mr_spec;
+
+
 };
 
 
@@ -56,7 +58,7 @@ Master::Master(const MapReduceSpec& mr_spec, const std::vector<FileShard>& file_
 		worker_stubs.push_back(std::move(worker_stub));  //unique_ptr cannot be copied, have to be moved
 		worker_channels.push_back(channel);
 	}
-	//create supporting data structures
+
 
 	// structure to keep track of which shards are done
 	for (auto entry: file_shards) {
