@@ -95,6 +95,9 @@ class Worker {
 						map<string, vector<string>> file_data;
 						auto reducer = get_reducer_from_task_factory("cs6210");
 						reducer->impl_->output_dir = request.output_dir();
+						int index = intermediate_file_path.find('.');
+						reducer->impl_->output_file = "final" + intermediate_file_path.substr(index-1, index);
+						cout << intermediate_file_path.substr(index-1, index);
 						ifstream intermediate_file(intermediate_file_path, ios::in);
 
 						if(!intermediate_file.is_open()){

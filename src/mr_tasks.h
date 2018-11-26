@@ -144,6 +144,6 @@ inline void BaseReducerInternal::configure(std::string output_dir, std::string o
 inline void BaseReducerInternal::emit(const std::string& key, const std::string& val) {
 	std::fstream file;
 	file.open(output_dir+"/"+output_file, std::fstream::in | std::fstream::out | std::fstream::app);
-	file << key << " " << val;
+	file << key << " " << val << "\n";
 	file.close();
 }
