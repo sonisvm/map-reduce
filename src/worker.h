@@ -3,10 +3,12 @@
 #include <mr_task_factory.h>
 #include "mr_tasks.h"
 #include "masterworker.grpc.pb.h"
-
+#include <map>
+#include <vector>
 #include <string>
 #include <fstream>
 #include <grpcpp/grpcpp.h>
+#include <algorithm>
 #include <grpc/support/log.h>
 
 using namespace std;
@@ -85,9 +87,36 @@ class Worker {
 						cout << "Mapping completed \n";
 						response.set_status(1);
 					} else {
-						std::cout << "in reduce " << request.task_type() << "\n";
-						// auto reducer = get_reducer_from_task_factory("cs6210");
-						// reducer->reduce("dummy", std::vector<std::string>({"1", "1"}));
+						std::cout << "Starting " << request.task_type() << " task \n";
+
+						string intermediate_file_path = request.file_paths(0).file_path();
+						cout << "Processing intermediate file: " << intermediate_file_path << "\n";
+
+						map<string, vector<string>> file_data;
+						auto reducer = get_reducer_from_task_factory("cs6210");
+						reducer->impl_->output_dir = request.output_dir();
+						ifstream intermediate_file(intermediate_file_path, ios::in);
+
+						if(!intermediate_file.is_open()){
+							cout << "Unable to open intermediate file\n";
+						} else {
+							while(getline(intermediate_file, str)) {
+								string key = str.substr(0, str.find(' '));
+								string value = str.substr(str.find(' ')+1, str.length());
+								if(file_data.find(key) != file_data.end()) {
+									file_data[key].push_back(value);
+								} else {
+									vector<string> value_arr= {value};
+									file_data.insert(std::pair<string, vector<string>>(key, value_arr));
+								}
+							}
+							for(auto x: file_data) {
+								sort(x.second.begin(), x.second.end());
+								reducer->reduce(x.first, x.second);
+							}
+							response.set_status(1);
+						}
+
 					}
 	        finish = true;
 	        response_writer.Finish(response, Status::OK, this);
@@ -120,7 +149,6 @@ class Worker {
 	You can populate your other class data members here if you want */
 Worker::Worker(std::string ip_addr_port) {
 	ip_addr_port = ip_addr_port;
-	cout << "sdf" << ip_addr_port;
 	ServerBuilder builder;
 	// Listen on the given address without any authentication mechanism.
 	builder.AddListeningPort(ip_addr_port, grpc::InsecureServerCredentials());
