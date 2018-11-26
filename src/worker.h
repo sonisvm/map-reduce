@@ -85,6 +85,7 @@ class Worker {
 						cout << "Mapping completed \n";
 						response.set_status(1);
 					} else {
+						std::cout << "in reduce " << request.task_type() << "\n";
 						// auto reducer = get_reducer_from_task_factory("cs6210");
 						// reducer->reduce("dummy", std::vector<std::string>({"1", "1"}));
 					}

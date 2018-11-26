@@ -92,6 +92,7 @@ bool Master::run() {
 			// grpc call to each worker
 			// all workers would be free
 			ClientContext* client_context = new ClientContext();
+			//client_contexts.push_back(client_context);
 
 			TaskRequest request;
 			//each shard can have multiple names
@@ -150,7 +151,7 @@ bool Master::run() {
 			for (; i < map_status.size(); i++) {
 				if (map_status[i]==0) {
 					ClientContext* client_context = new ClientContext();
-
+				//	client_contexts.push_back(client_context);
 					TaskRequest request;
 					//each shard can have multiple names
 					for (auto j=0; j<file_shards[i].filenames.size(); j++) {
@@ -197,7 +198,7 @@ bool Master::run() {
 			// grpc call to each worker
 			// all workers would be free
 			ClientContext* client_context = new ClientContext();
-
+			//client_contexts.push_back(client_context);
 			TaskRequest request;
 			//each shard can have multiple names
 			FilePath* file = request.add_file_paths();
@@ -269,7 +270,7 @@ bool Master::run() {
 					break;
 				}
 			}
-			if (i == map_status.size()) {
+			if (i == reduce_status.size()) {
 				// there are no more shards to process
 				worker_response_rcvd++;
 			}
