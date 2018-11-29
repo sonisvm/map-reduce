@@ -5,7 +5,7 @@ LDFLAGS += -L/usr/local/lib `pkg-config --libs grpc++ grpc`       \
            -Wl,--no-as-needed -lgrpc++_reflection -Wl,--as-needed \
            -lprotobuf -lpthread -ldl
 
-MAPREDUCE_LIB = -L../external/lib -lmapreduce 
+MAPREDUCE_LIB = -L../external/lib -lmapreduce
 MR_WORKER_LIB = -L../external/lib -lmr_worker
 
 all: mrdemo mr_worker
@@ -20,4 +20,4 @@ mr_worker: user_tasks.o
 	$(CXX) -c $< -I../external/include $(CXXFLAGS)
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h mrdemo mr_worker
+	rm -f *.o *.pb.cc *.pb.h mrdemo mr_worker ./output/*.txt

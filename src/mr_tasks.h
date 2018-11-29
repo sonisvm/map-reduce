@@ -46,10 +46,11 @@ inline void BaseMapperInternal::configure(int num_reducers, std::string output_d
 inline void BaseMapperInternal::flush(){
 	//save any keys left in the map to file
 	for (auto entry : fileToKeyValueMap) {
-		std::fstream file;
-		file.open(entry.first, std::fstream::in | std::fstream::out | std::fstream::app);
+		std::ofstream file;
+		file.open(entry.first, std::fstream::app);
 		for (auto keyValue: entry.second) {
 			file << keyValue.first <<" " << keyValue.second << "\n";
+			file.flush();
 		}
 		file.close();
 		files.insert(entry.first);
@@ -60,7 +61,7 @@ inline void BaseMapperInternal::flush(){
 
 //gets the intermediate file to store the data
 inline std::string BaseMapperInternal::getFilePath(std::string key){
-	return output_dir+"/intermediate" + std::to_string(key.length()%num_reducers) +".txt";
+	return output_dir+"/intermediate" + std::to_string(std::hash<std::string>{}(key)%num_reducers) +".txt";
 }
 
 /* CS6210_TASK Implement this function */
@@ -87,10 +88,11 @@ inline void BaseMapperInternal::emit(const std::string& key, const std::string& 
 
 	if(key_count >= 100){
 		for (auto entry : fileToKeyValueMap) {
-			std::fstream file;
-			file.open(entry.first, std::fstream::in | std::fstream::out | std::fstream::app);
+			std::ofstream file;
+			file.open(entry.first, std::fstream::app);
 			for (auto keyValue: entry.second) {
 				file << keyValue.first <<" " << keyValue.second << "\n";
+				file.flush();
 			}
 			file.close();
 			files.insert(entry.first);
