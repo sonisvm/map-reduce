@@ -88,38 +88,38 @@ class Worker {
 						response.set_status(1);
 					} else {
 						std::cout << "Starting " << request.task_type() << " task \n";
+						for(auto entry: request.file_paths()) {
+								string intermediate_file_path = entry.file_path();
+								cout << "Processing intermediate file: " << intermediate_file_path << "\n";
 
-						string intermediate_file_path = request.file_paths(0).file_path();
-						cout << "Processing intermediate file: " << intermediate_file_path << "\n";
+								map<string, vector<string>> file_data;
+								auto reducer = get_reducer_from_task_factory("cs6210");
+								reducer->impl_->output_dir = request.output_dir();
+								int index = intermediate_file_path.find('.');
+								reducer->impl_->output_file = "final" + intermediate_file_path.substr(index-1, index);
+								cout << intermediate_file_path.substr(index-1, index);
+								ifstream intermediate_file(intermediate_file_path, ios::in);
 
-						map<string, vector<string>> file_data;
-						auto reducer = get_reducer_from_task_factory("cs6210");
-						reducer->impl_->output_dir = request.output_dir();
-						int index = intermediate_file_path.find('.');
-						reducer->impl_->output_file = "final" + intermediate_file_path.substr(index-1, index);
-						cout << intermediate_file_path.substr(index-1, index);
-						ifstream intermediate_file(intermediate_file_path, ios::in);
-
-						if(!intermediate_file.is_open()){
-							cout << "Unable to open intermediate file\n";
-						} else {
-							while(getline(intermediate_file, str)) {
-								string key = str.substr(0, str.find(' '));
-								string value = str.substr(str.find(' ')+1, str.length());
-								if(file_data.find(key) != file_data.end()) {
-									file_data[key].push_back(value);
+								if(!intermediate_file.is_open()){
+									cout << "Unable to open intermediate file\n";
 								} else {
-									vector<string> value_arr= {value};
-									file_data.insert(std::pair<string, vector<string>>(key, value_arr));
+									while(getline(intermediate_file, str)) {
+										string key = str.substr(0, str.find(' '));
+										string value = str.substr(str.find(' ')+1, str.length());
+										if(file_data.find(key) != file_data.end()) {
+											file_data[key].push_back(value);
+										} else {
+											vector<string> value_arr= {value};
+											file_data.insert(std::pair<string, vector<string>>(key, value_arr));
+										}
+									}
+									for(auto x: file_data) {
+										reducer->reduce(x.first, x.second);
+									}
+
 								}
 							}
-							for(auto x: file_data) {
-								sort(x.second.begin(), x.second.end());
-								reducer->reduce(x.first, x.second);
-							}
 							response.set_status(1);
-						}
-
 					}
 	        finish = true;
 	        response_writer.Finish(response, Status::OK, this);
