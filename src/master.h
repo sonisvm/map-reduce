@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <unistd.h>
+#include <sys/stat.h>
 
 using masterworker::TaskRequest;
 using masterworker::Worker;
@@ -99,7 +100,10 @@ void Master::mapPhase(int worker){
 				file->set_end_offset(file_shards[shard].to_offset[i]);
 			}
 			request.set_task_type("MAP");
-			request.set_output_dir(mr_spec.output_dir);
+			//create output directory
+			std::string output_dir = mr_spec.output_dir+"/worker"+std::to_string(worker);
+			mkdir(output_dir.c_str(), S_IRUSR | S_IWUSR);
+			request.set_output_dir(output_dir);
 			request.set_num_reducers(mr_spec.num_output_files);
 
 			std::unique_ptr<ClientAsyncResponseReader<TaskResponse>> response_reader(worker_stubs[worker]->PrepareAsyncassignTask(&client_context, request, &worker_response_cq));
