@@ -20,4 +20,4 @@ mr_worker: user_tasks.o
 	$(CXX) -c $< -I../external/include $(CXXFLAGS)
 
 clean:
-	rm -f *.o *.pb.cc *.pb.h mrdemo mr_worker ./output/*.txt
+	rm -f *.o *.pb.cc *.pb.h mrdemo mr_worker ./output/*
