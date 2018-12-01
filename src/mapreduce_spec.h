@@ -139,6 +139,10 @@ inline bool validate_mr_spec(const MapReduceSpec& mr_spec) {
 	}
 
 	//https://stackoverflow.com/questions/12510874/how-can-i-check-if-a-directory-exists
+	if(mr_spec.worker_ipaddr_ports.size() != mr_spec.num_workers) {
+		std::cerr << "Number of workers not equal to number of worker ipaddresses" << std::endl;
+		ret_val = false;
+	}
 
 	return ret_val;
 }
