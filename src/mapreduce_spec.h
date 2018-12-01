@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <dirent.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -23,7 +25,7 @@ struct MapReduceSpec {
 inline bool read_mr_spec_from_config_file(const std::string& config_filename, MapReduceSpec& mr_spec) {
 	fstream file;
 	string line;
-	file.open("../test/config.ini", fstream::in);
+	file.open(config_filename, fstream::in);
 	size_t index;
 	while(getline(file, line)) {
 		if(line.find("n_workers=") != string::npos) {
@@ -141,6 +143,12 @@ inline bool validate_mr_spec(const MapReduceSpec& mr_spec) {
 	//https://stackoverflow.com/questions/12510874/how-can-i-check-if-a-directory-exists
 	if(mr_spec.worker_ipaddr_ports.size() != mr_spec.num_workers) {
 		std::cerr << "Number of workers not equal to number of worker ipaddresses" << std::endl;
+		ret_val = false;
+	}
+
+	DIR* dir = opendir(mr_spec.output_dir.c_str());
+	if(ENOENT == errno) {
+		std::cerr << "Output directory doesn't exist" << std::endl;
 		ret_val = false;
 	}
 
