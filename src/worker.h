@@ -54,7 +54,7 @@ class Worker {
 	        new RequestHandler(service, worker_request_cq, worker);
 
 					if(request.task_type() == "MAP") {
-						cout << "Mapping in process \n";
+
 						auto mapper = get_mapper_from_task_factory("cs6210");
 						mapper->impl_->num_reducers = request.num_reducers();
 						mapper->impl_->output_dir = request.output_dir();
@@ -84,20 +84,19 @@ class Worker {
 							FilePath* file_path = response.add_file_paths();
 							file_path->set_file_path(entry);
 						}
-						cout << "Mapping completed \n";
+
 						response.set_status(1);
 					} else {
-						std::cout << "Starting " << request.task_type() << " task \n";
+
+						map<string, vector<string>> file_data;
+
+						auto reducer = get_reducer_from_task_factory("cs6210");
+						reducer->impl_->output_dir = request.output_dir();
 						for(auto entry: request.file_paths()) {
 								string intermediate_file_path = entry.file_path();
-								cout << "Processing intermediate file: " << intermediate_file_path << "\n";
 
-								map<string, vector<string>> file_data;
-								auto reducer = get_reducer_from_task_factory("cs6210");
-								reducer->impl_->output_dir = request.output_dir();
 								int index = intermediate_file_path.find('.');
 								reducer->impl_->output_file = "final" + intermediate_file_path.substr(index-1, index);
-								cout << intermediate_file_path.substr(index-1, index);
 								ifstream intermediate_file(intermediate_file_path, ios::in);
 
 								if(!intermediate_file.is_open()){
@@ -106,18 +105,16 @@ class Worker {
 									while(getline(intermediate_file, str)) {
 										string key = str.substr(0, str.find(' '));
 										string value = str.substr(str.find(' ')+1, str.length());
-										if(file_data.find(key) != file_data.end()) {
-											file_data[key].push_back(value);
-										} else {
-											vector<string> value_arr= {value};
-											file_data.insert(std::pair<string, vector<string>>(key, value_arr));
-										}
-									}
-									for(auto x: file_data) {
-										reducer->reduce(x.first, x.second);
+
+										file_data[key].push_back(value);
+
 									}
 
+
 								}
+							}
+							for(auto x: file_data) {
+								reducer->reduce(x.first, x.second);
 							}
 							response.set_status(1);
 					}
@@ -182,28 +179,6 @@ void Worker::handleRequests() {
 	BaseReduer's member BaseReducerInternal impl_ directly,
 	so you can manipulate them however you want when running map/reduce tasks*/
 bool Worker::run() {
-	/*  Below 5 lines are just examples of how you will call map and reduce
-		Remove them once you start writing your own logic */
-
-		//worker should get fileshard from Master
-
-		//worker should get num of reducers and output_dir
-		//configure BaseMapperInternal with num_reducers before calling map
-		//worker should read each line and pass it to map
-
-		//once map is done, worker should communicate the result with master
-		// master should mention if the task is reduce or map
-		//accordingly worker should invoke get_mapper_from_task_factory or get_reducer_from_task_factory
-
 	handleRequests();
-	// auto mapper = get_mapper_from_task_factory("cs6210");
-	//
-	// mapper->map("I m just a 'dummy', a \"dummy line\"");
-	//worker should call flush method
-	// auto reducer = get_reducer_from_task_factory("cs6210");
-	//worker gets intermediate file name
-	//worker can get the hash number and configure BaseReducerInternal
-	//configure BaseReducerInternal with the output file
-	// reducer->reduce("dummy", std::vector<std::string>({"1", "1"}));
 	return true;
 }

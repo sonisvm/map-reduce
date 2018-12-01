@@ -85,13 +85,5 @@ inline bool shard_files(const MapReduceSpec& mr_spec, std::vector<FileShard>& fi
 		}
 	}
 
-	for (int k=0; k<fileShards.size(); k++) {
-		std::cout << "Shard " << k << std::endl;
-		for (int l=0; l<fileShards[k].filenames.size(); l++) {
-			std::cout << "File " << fileShards[k].filenames[l] << std::endl;
-			std::cout << "File from offset " << fileShards[k].from_offset[l] << std::endl;
-			std::cout << "File to offset " << fileShards[k].to_offset[l] << std::endl;
-		}
-	}
 	return true;
 }

@@ -23,8 +23,6 @@ struct BaseMapperInternal {
 	/* DON'T change this function's signature */
 	void emit(const std::string& key, const std::string& val);
 
-	void configure(int num_reducers, std::string output_dir);
-
 	void flush();
 
 	std::string getFilePath(std::string key);
@@ -36,11 +34,6 @@ struct BaseMapperInternal {
 /* CS6210_TASK Implement this function */
 inline BaseMapperInternal::BaseMapperInternal() {
 	key_count=0;
-}
-
-inline void BaseMapperInternal::configure(int num_reducers, std::string output_dir){
-	this->num_reducers = num_reducers;
-	this->output_dir = output_dir;
 }
 
 inline void BaseMapperInternal::flush(){
@@ -122,7 +115,6 @@ struct BaseReducerInternal {
 
 	std::string output_dir;
 	std::string output_file;
-	std::map<std::string, std::string> keyValueMap;
 	/* DON'T change this function's signature */
 	BaseReducerInternal();
 
@@ -130,7 +122,7 @@ struct BaseReducerInternal {
 	void emit(const std::string& key, const std::string& val);
 
 	/* NOW you can add below, data members and member functions as per the need of your implementation*/
-	void configure(std::string output_dir, std::string output_file);
+
 };
 
 
@@ -139,15 +131,11 @@ inline BaseReducerInternal::BaseReducerInternal() {
 
 }
 
-inline void BaseReducerInternal::configure(std::string output_dir, std::string output_file){
-	this->output_dir = output_dir;
-	this->output_file = output_file;
-}
-
 /* CS6210_TASK Implement this function */
 inline void BaseReducerInternal::emit(const std::string& key, const std::string& val) {
 	std::fstream file;
 	file.open(output_dir+"/"+output_file, std::fstream::in | std::fstream::out | std::fstream::app);
 	file << key << " " << val << "\n";
+	file.flush();
 	file.close();
 }
