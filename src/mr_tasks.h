@@ -90,7 +90,9 @@ inline void BaseMapperInternal::emit(const std::string& key, const std::string& 
 		for (auto entry : fileToKeyValueMap) {
 			std::ofstream file;
 			file.open(entry.first, std::fstream::app);
+
 			for (auto keyValue: entry.second) {
+
 				file << keyValue.first <<" " << keyValue.second << "\n";
 				file.flush();
 			}

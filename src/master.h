@@ -46,6 +46,7 @@ class Master {
 		std::vector<int> worker_status;		// we give 3 retries to every worker. If worker fails for all, worker is not longer used
 		std::vector<std::string> intermediate_files;
 		MapReduceSpec mr_spec;
+		std::map<int, std::vector<std::string>> partition_to_intermediate_files; // stores for each partition, the corresponding intermediate_files
 
 		std::vector<std::thread> threads;
 		std::mutex task_lock;
@@ -102,7 +103,7 @@ void Master::mapPhase(int worker){
 			request.set_task_type("MAP");
 			//create output directory
 			std::string output_dir = mr_spec.output_dir+"/worker"+std::to_string(worker);
-			mkdir(output_dir.c_str(), S_IRUSR | S_IWUSR);
+			mkdir(output_dir.c_str(), 0777);
 			request.set_output_dir(output_dir);
 			request.set_num_reducers(mr_spec.num_output_files);
 
@@ -134,9 +135,14 @@ void Master::mapPhase(int worker){
 						// extracting the intermediate files from response
 						int result_size = response.file_paths_size();
 						for (size_t i = 0; i < result_size; i++) {
+							std::string file_path = response.file_paths(i).file_path();
+							int index = file_path.find('.');
+							int partition = std::stoi(file_path.substr(index-1, index));
+							std::cout << "partition " << partition << "\n";
 							intermediate_file_lock.lock();
 							//TO FIX: Make intermediate file a map between partition and filenames
-							intermediate_files.push_back(response.file_paths(i).file_path());
+							partition_to_intermediate_files[partition].push_back(file_path);
+							//intermediate_files.push_back(response.file_paths(i).file_path());
 							intermediate_file_lock.unlock();
 						}
 						task_lock.lock();
@@ -192,12 +198,16 @@ void Master::reducePhase(int worker){
 			client_context->set_deadline(deadline);
 			TaskRequest request;
 			CompletionQueue worker_response_cq;
-			FilePath* file = request.add_file_paths();
-			file->set_file_path(intermediate_files[partition]);
+			std::vector<std::string> file_paths = partition_to_intermediate_files[partition];
+			std::cout << "Partition " << partition << "\n";
+			for(int i=0; i< file_paths.size(); i++){
+				FilePath* file = request.add_file_paths();
+				std::cout << "File " << file_paths[i] << "\n";
+				file->set_file_path(file_paths[i]);
+			}
 
 			request.set_task_type("REDUCE");
 			request.set_output_dir(mr_spec.output_dir);
-			request.set_input_dir(mr_spec.output_dir);
 
 			Status status;
 
@@ -304,6 +314,13 @@ Master::Master(const MapReduceSpec& mr_spec, const std::vector<FileShard>& file_
 bool Master::run() {
 	startMapperThreads();
 	waitForThreads();
+	std::cout << "Conitnuing\n";
+	for (auto entry: partition_to_intermediate_files) {
+		std::cout << entry.first << "\n";
+		for (size_t i = 0; i < entry.second.size(); i++) {
+			std::cout << entry.second[i] << "\n";
+		}
+	}
 	//reset the worker status to 3
 	startReducerThreads();
 	waitForThreads();
