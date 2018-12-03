@@ -3,7 +3,7 @@
 ### Steps
 **Validating MapReduce specification**
 
-	The user is responsible for providing the following parameters to the mapreduce framework in the config.ini file.
+The user is responsible for providing the following parameters to the mapreduce framework in the config.ini file.
 -	Number of workers
 -	The server address and port number where the worker processes are deployed.
 -	The location of the input files
@@ -20,4 +20,4 @@ The program makes the following validations
 
 **Input sharding**
 
-	The size of each shard as well as the input files are specified by the user. The program uses the size of each input file to determine which shard it falls into. In order to prevent splitting a file in the middle of a word, the program aligns the split point to the next newline.
+The size of each shard as well as the input files are specified by the user. The program uses the size of each input file to determine which shard it falls into. In order to prevent splitting a file in the middle of a word, the program aligns the split point to the next newline.
