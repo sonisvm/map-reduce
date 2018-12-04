@@ -92,11 +92,11 @@ class Worker {
 
 						auto reducer = get_reducer_from_task_factory("cs6210");
 						reducer->impl_->output_dir = request.output_dir();
+						int index = request.file_paths(0).file_path().find('.');
+						reducer->impl_->output_file = "final" + request.file_paths(0).file_path().substr(index-1, index);
 						for(auto entry: request.file_paths()) {
 								string intermediate_file_path = entry.file_path();
 
-								int index = intermediate_file_path.find('.');
-								reducer->impl_->output_file = "final" + intermediate_file_path.substr(index-1, index);
 								ifstream intermediate_file(intermediate_file_path, ios::in);
 
 								if(!intermediate_file.is_open()){
